@@ -79,22 +79,30 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 
 /* VK */
 .vk{
-  display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;
+  display:grid;grid-template-columns:auto auto;gap:16px;align-items:center;justify-content:center;
   background:rgba(0,0,0,.28);border:2px solid rgba(255,255,255,.15);border-radius:18px;padding:10px;flex-shrink:0;
 }
 .vk.hidden{display:none}
-.dpad{display:grid;grid-template-columns:repeat(3,var(--touch));grid-template-rows:repeat(3,var(--touch));gap:4px;justify-self:center}
-.dpad .k{grid-column:2;grid-row:1}
-.dpad .k.left{grid-column:1;grid-row:2}
-.dpad .k.right{grid-column:3;grid-row:2}
-.dpad .k.down{grid-column:2;grid-row:3}
+.dpad{
+  display:grid;
+  grid-template-areas:". up ." "left mid right" ". down .";
+  grid-template-columns:var(--touch) var(--touch) var(--touch);
+  grid-template-rows:var(--touch) var(--touch) var(--touch);
+  gap:6px;
+}
+.dpad .up{grid-area:up}
+.dpad .left{grid-area:left}
+.dpad .right{grid-area:right}
+.dpad .down{grid-area:down}
+.dpad .mid{grid-area:mid;visibility:hidden;pointer-events:none}
 .k{
-  min-width:var(--touch);min-height:var(--touch);border-radius:16px;
+  min-width:var(--touch);min-height:var(--touch);width:var(--touch);height:var(--touch);border-radius:16px;
   background:rgba(255,255,255,.18);border:3px solid rgba(255,255,255,.3);
   font-weight:900;font-size:1.35rem;display:grid;place-items:center;color:#fff;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
 }
-.k:active,.k.pressed{background:rgba(255,255,255,.4);transform:scale(.94)}
-.ab{display:flex;gap:12px;justify-content:center}
+.k:active,.k.pressed{background:rgba(255,255,255,.45);transform:scale(.94)}
+.ab{display:flex;gap:14px;align-items:center;justify-content:center}
 .k.a{background:var(--primary);border-color:var(--primary-d);width:calc(var(--touch)*1.15);height:calc(var(--touch)*1.15);border-radius:50%}
 .k.b{background:#64748b;border-color:#334155;width:calc(var(--touch)*1.05);height:calc(var(--touch)*1.05);border-radius:50%}
 
@@ -198,10 +206,10 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     <div class="hint-bar" id="hint-bar">行去黃色地點，撳 A</div>
     <div class="map-wrap"><div id="map"></div></div>
     <div class="vk" id="vk">
-      <div></div>
       <div class="dpad">
-        <button type="button" class="k" data-act="up" aria-label="上">▲</button>
+        <button type="button" class="k up" data-act="up" aria-label="上">▲</button>
         <button type="button" class="k left" data-act="left" aria-label="左">◀</button>
+        <span class="mid" aria-hidden="true"></span>
         <button type="button" class="k right" data-act="right" aria-label="右">▶</button>
         <button type="button" class="k down" data-act="down" aria-label="下">▼</button>
       </div>
@@ -280,13 +288,13 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
   const MAP_W = 8, MAP_H = 6;
-  // 0 path, 1 wall, 2 sea
+  // 0 path, 1 wall(裝飾), 2 sea — 四角 spot + 中央 boss 全係 path，左右上下暢通
   const TILES = [
     [2,2,2,2,2,2,2,2],
     [2,0,0,0,0,0,0,2],
-    [2,0,1,0,0,1,0,2],
+    [2,0,0,1,1,0,0,2],
     [2,0,0,0,0,0,0,2],
-    [2,0,1,0,0,1,0,2],
+    [2,0,0,0,0,0,0,2],
     [2,2,2,2,2,2,2,2],
   ];
 
@@ -304,7 +312,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   // Content: distractors are obviously wrong only
   const SPOTS = [
     {
-      id: 'flag', x: 2, y: 1, emoji: '🚩', title: '國旗亭',
+      id: 'flag', x: 1, y: 1, emoji: '🚩', title: '國旗亭',
       visual: '🇨🇳',
       prompt: '邊面係<span class="hl">國旗</span>？',
       tts: '邊面係國旗',
@@ -316,7 +324,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
       ],
     },
     {
-      id: 'etiquette', x: 5, y: 1, emoji: '🎖️', title: '升旗台',
+      id: 'etiquette', x: 6, y: 1, emoji: '🎖️', title: '升旗台',
       visual: '🧍',
       prompt: '升旗時，邊個係<span class="hl">正確</span>？',
       tts: '升旗時，邊個係正確',
@@ -328,7 +336,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
       ],
     },
     {
-      id: 'mapchina', x: 2, y: 4, emoji: '🗺️', title: '地圖碑',
+      id: 'mapchina', x: 1, y: 4, emoji: '🗺️', title: '地圖碑',
       visual: '🇭🇰',
       prompt: '香港係<span class="hl">中國</span>邊部分？',
       tts: '香港係中國邊部分',
@@ -340,7 +348,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
       ],
     },
     {
-      id: 'festival', x: 5, y: 4, emoji: '🧧', title: '節日園',
+      id: 'festival', x: 6, y: 4, emoji: '🧧', title: '節日園',
       visual: '🌕',
       prompt: '中秋節睇咩？',
       tts: '中秋節睇咩',
@@ -354,7 +362,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   ];
 
   const BOSS = {
-    id: 'boss', x: 4, y: 3, emoji: '🚪', title: '綜合挑戰',
+    id: 'boss', x: 3, y: 3, emoji: '🚪', title: '綜合挑戰',
     questions: [
       {
         visual: '🇨🇳',
@@ -394,7 +402,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 
   const S = {
     screen: 'home',
-    player: { name: '同學', em: '🙂', x: 1, y: 1 },
+    player: { name: '同學', em: '🙂', x: 4, y: 1 },
     cleared: {},
     answered: 0,
     correct: 0,
@@ -512,8 +520,37 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 
   function canWalk(x, y) {
     if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return false;
-    const t = TILES[y][x];
-    return t === 0;
+    // spot / boss 永遠可行（即使誤放牆）
+    if (spotAt(x, y)) return true;
+    return TILES[y][x] === 0;
+  }
+
+  function assertSpotsWalkable() {
+    const bad = [];
+    SPOTS.concat([BOSS]).forEach(function (s) {
+      if (TILES[s.y][s.x] !== 0) bad.push(s.id + '@' + s.x + ',' + s.y + '=tile' + TILES[s.y][s.x]);
+    });
+    if (bad.length) console.warn('[NI] spot not on path:', bad);
+    return bad;
+  }
+
+  /** BFS：由起點可否行到所有 spot */
+  function reachableFrom(sx, sy) {
+    const seen = {};
+    const q = [[sx, sy]];
+    seen[sx + ',' + sy] = 1;
+    while (q.length) {
+      const p = q.shift();
+      const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+      for (let i = 0; i < 4; i++) {
+        const nx = p[0] + dirs[i][0], ny = p[1] + dirs[i][1];
+        const k = nx + ',' + ny;
+        if (seen[k] || !canWalk(nx, ny)) continue;
+        seen[k] = 1;
+        q.push([nx, ny]);
+      }
+    }
+    return seen;
   }
 
   function fitCells() {
@@ -586,7 +623,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     const nx = S.player.x + dx;
     const ny = S.player.y + dy;
     if (!canWalk(nx, ny)) {
-      toast('唔可以行呢邊');
+      // 靜音撞牆，避免「左右唔 work」錯覺
       return;
     }
     S.player.x = nx;
@@ -823,7 +860,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     S.correct = 0;
     S.bossQi = 0;
     S.bossOpen = false;
-    S.player.x = 1;
+    S.player.x = 4;
     S.player.y = 1;
     S.quiz = null;
     $('quiz-modal').classList.remove('on');
@@ -890,13 +927,32 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   function bindVk() {
     Array.prototype.forEach.call(document.querySelectorAll('.k[data-act]'), function (btn) {
       const act = btn.getAttribute('data-act');
+      let last = 0;
       const fire = function (e) {
-        e.preventDefault();
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - last < 70) return; // 防 pointer+click 雙觸
+        last = now;
         btn.classList.add('pressed');
         handleAct(act);
-        setTimeout(function () { btn.classList.remove('pressed'); }, 100);
+        setTimeout(function () { btn.classList.remove('pressed'); }, 90);
       };
-      btn.addEventListener('pointerdown', fire);
+      // pointerdown = 觸控即應；click = 滑鼠／無 pointer 裝置
+      btn.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        fire(e);
+      });
+      btn.addEventListener('click', function (e) {
+        // 已由 pointerdown 處理過就跳過（mouse/touch 多數會再 click）
+        if (Date.now() - last < 70) {
+          e.preventDefault();
+          return;
+        }
+        fire(e);
+      });
     });
   }
 
@@ -919,7 +975,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   // ——— UI binds ———
   $('btn-start').addEventListener('click', function () { showScreen('id'); });
   $('btn-id-skip').addEventListener('click', function () {
-    S.player = { name: '同學', em: '🙂', x: 1, y: 1 };
+    S.player = { name: '同學', em: '🙂', x: 4, y: 1 };
     startGame();
   });
   $('btn-id-go').addEventListener('click', startGame);
@@ -987,6 +1043,13 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   // boot
   buildIdGrid();
   bindVk();
+  assertSpotsWalkable();
+  (function smokeReach() {
+    const r = reachableFrom(4, 1);
+    const miss = SPOTS.concat([BOSS]).filter(function (s) { return !r[s.x + ',' + s.y]; });
+    if (miss.length) console.error('[NI] unreachable', miss.map(function (s) { return s.id; }));
+    else console.log('[NI] all spots reachable from start');
+  })();
   if (window.speechSynthesis) {
     window.speechSynthesis.getVoices();
     window.speechSynthesis.onvoiceschanged = function () { window.speechSynthesis.getVoices(); };
@@ -999,7 +1062,11 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     move: move,
     tryInteract: tryInteract,
     allSpotsCleared: allSpotsCleared,
+    canWalk: canWalk,
+    reachableFrom: reachableFrom,
     SPOTS: SPOTS,
+    BOSS: BOSS,
+    TILES: TILES,
   };
 })();
 </script>
