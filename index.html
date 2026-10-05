@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#1a6b3c" />
+<title>小小國情島</title>
+<style>
+:root{
+  --bg:#0d3b24; --bg2:#145c38; --card:#fff8e7; --ink:#1a2e1f; --muted:#5a6b5e;
+  --ok:#22c55e; --bad:#ef4444; --gold:#f59e0b; --silver:#94a3b8; --bronze:#d97706;
+  --primary:#c41e3a; --primary-d:#8b1028; --sea:#3b82f6; --path:#86efac; --wall:#166534;
+  --touch:min(72px,18vw); --r:18px; --fs:clamp(1.05rem,2.5vw,1.35rem);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;height:100%;font-family:"PingFang HK","Noto Sans TC",system-ui,sans-serif;
+  background:linear-gradient(165deg,#0a2e1c,#145c38 45%,#0d3b24);
+  color:var(--card);font-size:var(--fs);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
+  overflow:hidden;
+}
+button{font:inherit;cursor:pointer;border:none;color:inherit}
+#app{height:100dvh;max-width:980px;margin:0 auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.screen{display:none;flex:1;flex-direction:column;min-height:0}
+.screen.on{display:flex}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.brand{font-weight:900;font-size:clamp(1.2rem,3.5vw,1.7rem)}
+.spacer{flex:1}
+.pill{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 12px;font-weight:800}
+.icon-btn{min-width:48px;min-height:48px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);font-size:1.25rem;display:grid;place-items:center}
+.icon-btn:active{transform:scale(.95)}
+.card{background:var(--card);color:var(--ink);border-radius:var(--r);padding:16px;border:3px solid #e8d9b0;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(--primary-d)}
+.sub{color:var(--muted);margin:0 0 14px;line-height:1.4;font-weight:600}
+.btn{min-height:var(--touch);padding:12px 20px;border-radius:16px;font-weight:900;border:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary-d);width:100%;font-size:clamp(1.15rem,3vw,1.5rem)}
+.btn-ghost{background:#fff;color:var(--ink);border-color:#d6d3d1}
+.btn-ok{background:var(--ok);color:#fff;border-color:#15803d}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-row>*{flex:1;min-width:120px}
+
+/* identity */
+.id-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.id-grid{grid-template-columns:repeat(3,1fr)}}
+.id-card{aspect-ratio:1;border:4px solid #e7e5e4;border-radius:16px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:900}
+.id-card .em{font-size:clamp(1.8rem,6vw,2.6rem);line-height:1}
+.id-card.on{border-color:var(--primary);box-shadow:0 0 0 4px rgba(196,30,58,.25);background:#fff1f2}
+.id-card:active{transform:scale(.96)}
+
+/* map */
+.map-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+#map{
+  display:grid;gap:2px;padding:6px;background:rgba(0,0,0,.25);border-radius:16px;
+  border:3px solid rgba(255,255,255,.2);box-shadow:0 12px 30px rgba(0,0,0,.3);
+}
+.cell{
+  width:var(--cell,44px);height:var(--cell,44px);border-radius:8px;
+  display:grid;place-items:center;font-size:calc(var(--cell,44px)*.55);position:relative;
+  background:var(--path);border:1px solid rgba(0,0,0,.08);
+}
+.cell.wall{background:var(--wall);border-color:#14532d}
+.cell.sea{background:var(--sea);border-color:#1d4ed8}
+.cell.spot{background:#fef08a;border:2px solid #ca8a04;box-shadow:0 0 0 2px rgba(250,204,21,.35)}
+.cell.spot.cleared{background:#bbf7d0;border-color:#16a34a;opacity:.9}
+.cell.boss{background:#fecaca;border:2px solid #dc2626}
+.cell.boss.ready{animation:pulse 1.2s ease-in-out infinite}
+.player{
+  position:absolute;width:78%;height:78%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,#fbbf24 55%,#d97706);
+  border:3px solid #78350f;box-shadow:0 2px 6px rgba(0,0,0,.35);
+  display:grid;place-items:center;font-size:.7em;z-index:2;pointer-events:none;
+  transition:left .12s linear, top .12s linear;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+.hint-bar{text-align:center;font-weight:800;color:#fef9c3;min-height:1.4em;flex-shrink:0}
+
+/* VK */
+.vk{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;
+  background:rgba(0,0,0,.28);border:2px solid rgba(255,255,255,.15);border-radius:18px;padding:10px;flex-shrink:0;
+}
+.vk.hidden{display:none}
+.dpad{display:grid;grid-template-columns:repeat(3,var(--touch));grid-template-rows:repeat(3,var(--touch));gap:4px;justify-self:center}
+.dpad .k{grid-column:2;grid-row:1}
+.dpad .k.left{grid-column:1;grid-row:2}
+.dpad .k.right{grid-column:3;grid-row:2}
+.dpad .k.down{grid-column:2;grid-row:3}
+.k{
+  min-width:var(--touch);min-height:var(--touch);border-radius:16px;
+  background:rgba(255,255,255,.18);border:3px solid rgba(255,255,255,.3);
+  font-weight:900;font-size:1.35rem;display:grid;place-items:center;color:#fff;
+}
+.k:active,.k.pressed{background:rgba(255,255,255,.4);transform:scale(.94)}
+.ab{display:flex;gap:12px;justify-content:center}
+.k.a{background:var(--primary);border-color:var(--primary-d);width:calc(var(--touch)*1.15);height:calc(var(--touch)*1.15);border-radius:50%}
+.k.b{background:#64748b;border-color:#334155;width:calc(var(--touch)*1.05);height:calc(var(--touch)*1.05);border-radius:50%}
+
+/* quiz modal */
+.modal{
+  position:fixed;inset:0;z-index:50;background:rgba(0,20,10,.72);
+  display:none;align-items:center;justify-content:center;padding:12px;
+}
+.modal.on{display:flex}
+.modal .card{width:min(560px,100%);max-height:min(92dvh,720px);overflow:auto}
+.q-visual{font-size:clamp(3rem,14vw,5rem);text-align:center;line-height:1.1;margin:4px 0 10px}
+.q-prompt{font-size:clamp(1.25rem,3.5vw,1.7rem);font-weight:900;text-align:center;margin:0 0 12px;line-height:1.35}
+.hl{background:#fef08a;padding:0 .15em;border-radius:6px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.choices{grid-template-columns:1fr}}
+.choice{
+  background:#fff;border:4px solid #e7e5e4;border-radius:16px;padding:10px 8px;
+  min-height:var(--touch);display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;
+}
+.choice:active{transform:scale(.98)}
+.choice .letter{
+  width:2.2em;height:2.2em;border-radius:50%;background:var(--primary);color:#fff;
+  display:grid;place-items:center;font-size:clamp(1.3rem,4vw,1.8rem);font-weight:900;border:3px solid var(--primary-d);
+}
+.choice .v{font-size:clamp(1.8rem,7vw,2.6rem);line-height:1}
+.choice .lab{font-size:clamp(.95rem,2.5vw,1.15rem);text-align:center}
+.choice.correct{border-color:var(--ok);background:#ecfdf5;box-shadow:0 0 0 4px rgba(34,197,94,.25)}
+.choice.wrong{border-color:var(--bad);background:#fef2f2;box-shadow:0 0 0 4px rgba(239,68,68,.2)}
+.choice.disabled{pointer-events:none;opacity:.9}
+.choice.sel{outline:3px solid #3b82f6;outline-offset:2px}
+.fb{display:none;margin-top:12px;padding:12px;border-radius:14px;font-weight:900;text-align:center}
+.fb.on{display:block}
+.fb.ok{background:#ecfdf5;color:#166534;border:3px solid #86efac}
+.fb.bad{background:#fef2f2;color:#991b1b;border:3px solid #fecaca}
+.q-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.q-actions .btn{flex:1;min-width:110px}
+
+/* cert */
+.cert-medal{font-size:clamp(4rem,18vw,6rem);text-align:center;line-height:1;margin:8px 0}
+.cert-title{text-align:center;font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;margin:0}
+.cert-sub{text-align:center;color:var(--muted);font-weight:700;margin:8px 0 16px}
+.score-line{text-align:center;font-weight:900;font-size:1.25rem;margin-bottom:16px}
+
+/* teacher */
+.teacher{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.8);
+  display:none;align-items:flex-end;justify-content:center;padding:12px;
+}
+.teacher.on{display:flex}
+.teacher .card{width:min(420px,100%)}
+.teacher label{display:block;font-weight:800;margin:10px 0 4px}
+.teacher select,.teacher input[type=range]{width:100%;font-size:1rem;padding:8px;border-radius:10px;border:2px solid #d6d3d1}
+
+.toast{
+  position:fixed;left:50%;bottom:18%;transform:translateX(-50%);
+  background:rgba(15,23,42,.92);color:#fff;padding:10px 16px;border-radius:12px;
+  font-weight:800;z-index:80;display:none;max-width:90%;text-align:center;
+}
+.toast.on{display:block;animation:fade 1.6s ease forwards}
+@keyframes fade{0%{opacity:0;transform:translateX(-50%) translateY(8px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HOME -->
+  <section id="sc-home" class="screen on">
+    <div class="card" style="margin:auto;width:100%;max-width:480px">
+      <div style="text-align:center;font-size:3.2rem;line-height:1">🏝️</div>
+      <h1 style="text-align:center">小小國情島</h1>
+      <p class="sub" style="text-align:center">行地圖 · 認國旗 · 學禮儀<br>用 ↑↓←→ 同 <b>A</b> / <b>B</b></p>
+      <button type="button" class="btn btn-primary" id="btn-start">開始 ▶</button>
+      <p class="sub" style="text-align:center;margin-top:12px;font-size:.9rem">長按標題開老師設定</p>
+    </div>
+  </section>
+
+  <!-- IDENTITY -->
+  <section id="sc-id" class="screen">
+    <div class="topbar"><div class="brand">揀身份</div><div class="spacer"></div>
+      <button type="button" class="icon-btn" id="btn-tts-id" title="讀">🔊</button>
+    </div>
+    <div class="card" style="flex:1;overflow:auto">
+      <p class="sub" style="margin-top:0">撳一張卡開始（可跳過）</p>
+      <div class="id-grid" id="id-grid"></div>
+      <div class="btn-row" style="margin-top:14px">
+        <button type="button" class="btn btn-ghost" id="btn-id-skip">跳過</button>
+        <button type="button" class="btn btn-primary" id="btn-id-go" disabled>去小島 ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="sc-map" class="screen">
+    <div class="topbar">
+      <div class="brand" id="map-title">小小國情島</div>
+      <span class="pill" id="score-pill">⭐ 0/0</span>
+      <span class="pill" id="spot-pill">🚩 0/4</span>
+      <div class="spacer"></div>
+      <button type="button" class="icon-btn" id="btn-tts-map">🔊</button>
+      <button type="button" class="icon-btn" id="btn-home" title="主頁">🏠</button>
+    </div>
+    <div class="hint-bar" id="hint-bar">行去黃色地點，撳 A</div>
+    <div class="map-wrap"><div id="map"></div></div>
+    <div class="vk" id="vk">
+      <div></div>
+      <div class="dpad">
+        <button type="button" class="k" data-act="up" aria-label="上">▲</button>
+        <button type="button" class="k left" data-act="left" aria-label="左">◀</button>
+        <button type="button" class="k right" data-act="right" aria-label="右">▶</button>
+        <button type="button" class="k down" data-act="down" aria-label="下">▼</button>
+      </div>
+      <div class="ab">
+        <button type="button" class="k b" data-act="b" aria-label="B">B</button>
+        <button type="button" class="k a" data-act="a" aria-label="A">A</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERT -->
+  <section id="sc-cert" class="screen">
+    <div class="card" style="margin:auto;width:100%;max-width:480px;text-align:center">
+      <div class="cert-medal" id="cert-medal">🥇</div>
+      <h2 class="cert-title" id="cert-title">金牌</h2>
+      <p class="cert-sub" id="cert-who">同學 · 小小國情島</p>
+      <div class="score-line" id="cert-score">10 / 10</div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="btn-cert-home">主頁</button>
+        <button type="button" class="btn btn-primary" id="btn-cert-replay">再玩</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- QUIZ -->
+<div class="modal" id="quiz-modal" role="dialog" aria-modal="true">
+  <div class="card">
+    <div class="topbar" style="margin-bottom:6px">
+      <strong id="quiz-title">題目</strong>
+      <div class="spacer"></div>
+      <button type="button" class="icon-btn" id="btn-tts-q">🔊</button>
+      <button type="button" class="icon-btn" id="btn-quiz-close" title="返">✕</button>
+    </div>
+    <div class="q-visual" id="q-visual">🚩</div>
+    <p class="q-prompt" id="q-prompt">題目</p>
+    <div class="choices" id="q-choices"></div>
+    <div class="fb" id="q-fb"></div>
+    <div class="q-actions" id="q-actions" hidden>
+      <button type="button" class="btn btn-ghost" id="btn-retry">再答一次</button>
+      <button type="button" class="btn btn-ok" id="btn-next">繼續 ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER -->
+<div class="teacher" id="teacher">
+  <div class="card">
+    <strong>老師設定</strong>
+    <label>選項數（2=初／3=中／4=高）</label>
+    <select id="set-diff">
+      <option value="2">2 選 1</option>
+      <option value="3" selected>3 選 1</option>
+      <option value="4">4 選 1</option>
+    </select>
+    <label>顯示虛擬掣</label>
+    <select id="set-vk">
+      <option value="1" selected>開</option>
+      <option value="0">關（只用實體鍵）</option>
+    </select>
+    <label style="margin-top:12px">快捷</label>
+    <div class="btn-row">
+      <button type="button" class="btn btn-ghost" id="btn-t-boss">跳 Boss</button>
+      <button type="button" class="btn btn-ghost" id="btn-t-reset">重設進度</button>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-t-close" style="margin-top:12px">關閉</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ——— SEN locks ———
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  const MAP_W = 8, MAP_H = 6;
+  // 0 path, 1 wall, 2 sea
+  const TILES = [
+    [2,2,2,2,2,2,2,2],
+    [2,0,0,0,0,0,0,2],
+    [2,0,1,0,0,1,0,2],
+    [2,0,0,0,0,0,0,2],
+    [2,0,1,0,0,1,0,2],
+    [2,2,2,2,2,2,2,2],
+  ];
+
+  const IDS = [
+    { id: 'red', em: '🐻', name: '小熊' },
+    { id: 'blue', em: '🐰', name: '小兔' },
+    { id: 'green', em: '🐱', name: '小貓' },
+    { id: 'yellow', em: '🐶', name: '小狗' },
+    { id: 'purple', em: '🦊', name: '小狐' },
+    { id: 'orange', em: '🐼', name: '熊貓' },
+    { id: 'teal', em: '🐧', name: '企鵝' },
+    { id: 'pink', em: '🐯', name: '小虎' },
+  ];
+
+  // Content: distractors are obviously wrong only
+  const SPOTS = [
+    {
+      id: 'flag', x: 2, y: 1, emoji: '🚩', title: '國旗亭',
+      visual: '🇨🇳',
+      prompt: '邊面係<span class="hl">國旗</span>？',
+      tts: '邊面係國旗',
+      options: [
+        { label: '國旗', visual: '🇨🇳', ok: true },
+        { label: '足球', visual: '⚽', ok: false },
+        { label: '雪糕', visual: '🍦', ok: false },
+        { label: '汽車', visual: '🚗', ok: false },
+      ],
+    },
+    {
+      id: 'etiquette', x: 5, y: 1, emoji: '🎖️', title: '升旗台',
+      visual: '🧍',
+      prompt: '升旗時，邊個係<span class="hl">正確</span>？',
+      tts: '升旗時，邊個係正確',
+      options: [
+        { label: '企定安靜', visual: '🧍', ok: true },
+        { label: '跑來跑去', visual: '🏃', ok: false },
+        { label: '大叫玩遊戲', visual: '📢', ok: false },
+        { label: '趴地睡覺', visual: '😴', ok: false },
+      ],
+    },
+    {
+      id: 'mapchina', x: 2, y: 4, emoji: '🗺️', title: '地圖碑',
+      visual: '🇭🇰',
+      prompt: '香港係<span class="hl">中國</span>邊部分？',
+      tts: '香港係中國邊部分',
+      options: [
+        { label: '中國一部分', visual: '🇨🇳', ok: true },
+        { label: '一隻鞋', visual: '👟', ok: false },
+        { label: '一塊餅', visual: '🍪', ok: false },
+        { label: '一支筆', visual: '✏️', ok: false },
+      ],
+    },
+    {
+      id: 'festival', x: 5, y: 4, emoji: '🧧', title: '節日園',
+      visual: '🌕',
+      prompt: '中秋節睇咩？',
+      tts: '中秋節睇咩',
+      options: [
+        { label: '月亮', visual: '🌕', ok: true },
+        { label: '雨傘', visual: '☂️', ok: false },
+        { label: '洗衣機', visual: '🧺', ok: false },
+        { label: '掃把', visual: '🧹', ok: false },
+      ],
+    },
+  ];
+
+  const BOSS = {
+    id: 'boss', x: 4, y: 3, emoji: '🚪', title: '綜合挑戰',
+    questions: [
+      {
+        visual: '🇨🇳',
+        prompt: '呢面旗係？',
+        tts: '呢面旗係',
+        options: [
+          { label: '國旗', visual: '🇨🇳', ok: true },
+          { label: '香蕉', visual: '🍌', ok: false },
+          { label: '波', visual: '🏀', ok: false },
+          { label: '鐘', visual: '⏰', ok: false },
+        ],
+      },
+      {
+        visual: '🤫',
+        prompt: '唱國歌要點？',
+        tts: '唱國歌要點',
+        options: [
+          { label: '安靜企好', visual: '🤫', ok: true },
+          { label: '食零食', visual: '🍿', ok: false },
+          { label: '玩手機', visual: '📱', ok: false },
+          { label: '打交', visual: '💥', ok: false },
+        ],
+      },
+      {
+        visual: '🐉',
+        prompt: '春節常見動物？',
+        tts: '春節常見動物',
+        options: [
+          { label: '龍／舞龍', visual: '🐉', ok: true },
+          { label: '雪櫃', visual: '❄️', ok: false },
+          { label: '飛機餐', visual: '🍱', ok: false },
+          { label: '釘書機', visual: '📎', ok: false },
+        ],
+      },
+    ],
+  };
+
+  const S = {
+    screen: 'home',
+    player: { name: '同學', em: '🙂', x: 1, y: 1 },
+    cleared: {},
+    answered: 0,
+    correct: 0,
+    nOpts: 3,
+    showVk: true,
+    quiz: null, // { mode:'spot'|'boss', spotId, qi, q, rendered, picked, wasCorrect, scored }
+    bossQi: 0,
+    bossOpen: false,
+    selChoice: 0,
+  };
+
+  const $ = function (id) { return document.getElementById(id); };
+  const mapEl = $('map');
+  let cellPx = 44;
+  let longPressTimer = null;
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.remove('on');
+    void t.offsetWidth;
+    t.classList.add('on');
+  }
+
+  function speak(text) {
+    if (!text || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g, ''));
+    u.lang = 'zh-HK';
+    u.rate = 0.95;
+    const vs = window.speechSynthesis.getVoices();
+    const v = vs.find(function (x) { return /zh(-|_)?HK|yue|cantonese/i.test(x.lang + x.name); })
+      || vs.find(function (x) { return /zh/i.test(x.lang); });
+    if (v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }
+
+  function beep(ok) {
+    try {
+      const ctx = beep._ctx || (beep._ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = ok ? 880 : 220;
+      g.gain.value = 0.06;
+      o.start();
+      setTimeout(function () { o.stop(); }, ok ? 120 : 180);
+    } catch (e) { /* ignore */ }
+  }
+
+  function showScreen(name) {
+    S.screen = name;
+    ['home', 'id', 'map', 'cert'].forEach(function (n) {
+      const el = $('sc-' + n);
+      if (el) el.classList.toggle('on', n === name);
+    });
+    if (name === 'map') {
+      renderMap();
+      updateHUD();
+      $('vk').classList.toggle('hidden', !S.showVk);
+    }
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function pickOptions(opts, n) {
+    const ok = opts.filter(function (o) { return o.ok; });
+    const bad = opts.filter(function (o) { return !o.ok; });
+    const needBad = Math.max(0, n - ok.length);
+    const chosen = ok.concat(shuffle(bad).slice(0, needBad));
+    return shuffle(chosen).slice(0, n);
+  }
+
+  // ——— Identity ———
+  function buildIdGrid() {
+    const g = $('id-grid');
+    g.innerHTML = '';
+    IDS.forEach(function (it) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'id-card';
+      b.dataset.id = it.id;
+      b.innerHTML = '<span class="em">' + it.em + '</span><span>' + it.name + '</span>';
+      b.addEventListener('click', function () {
+        S.player.name = it.name;
+        S.player.em = it.em;
+        Array.prototype.forEach.call(g.querySelectorAll('.id-card'), function (c) {
+          c.classList.toggle('on', c === b);
+        });
+        $('btn-id-go').disabled = false;
+      });
+      g.appendChild(b);
+    });
+  }
+
+  // ——— Map ———
+  function spotAt(x, y) {
+    for (let i = 0; i < SPOTS.length; i++) {
+      if (SPOTS[i].x === x && SPOTS[i].y === y) return SPOTS[i];
+    }
+    if (BOSS.x === x && BOSS.y === y) return BOSS;
+    return null;
+  }
+
+  function allSpotsCleared() {
+    return SPOTS.every(function (s) { return !!S.cleared[s.id]; });
+  }
+
+  function canWalk(x, y) {
+    if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return false;
+    const t = TILES[y][x];
+    return t === 0;
+  }
+
+  function fitCells() {
+    const wrap = document.querySelector('.map-wrap');
+    if (!wrap) return;
+    const pad = 16;
+    const cw = Math.floor((wrap.clientWidth - pad) / MAP_W);
+    const ch = Math.floor((wrap.clientHeight - pad) / MAP_H);
+    cellPx = Math.max(28, Math.min(56, Math.min(cw, ch) - 2));
+    mapEl.style.setProperty('--cell', cellPx + 'px');
+    mapEl.style.gridTemplateColumns = 'repeat(' + MAP_W + ', ' + cellPx + 'px)';
+  }
+
+  function renderMap() {
+    fitCells();
+    mapEl.innerHTML = '';
+    S.bossOpen = allSpotsCleared();
+    for (let y = 0; y < MAP_H; y++) {
+      for (let x = 0; x < MAP_W; x++) {
+        const d = document.createElement('div');
+        d.className = 'cell';
+        d.dataset.x = x;
+        d.dataset.y = y;
+        const t = TILES[y][x];
+        if (t === 1) d.classList.add('wall');
+        if (t === 2) d.classList.add('sea');
+        const sp = spotAt(x, y);
+        if (sp && sp.id !== 'boss') {
+          d.classList.add('spot');
+          if (S.cleared[sp.id]) d.classList.add('cleared');
+          d.textContent = S.cleared[sp.id] ? '✅' : sp.emoji;
+        } else if (sp && sp.id === 'boss') {
+          d.classList.add('boss');
+          if (S.bossOpen) d.classList.add('ready');
+          d.textContent = S.bossOpen ? '🚪' : '🔒';
+        } else if (t === 0) {
+          d.textContent = '';
+        } else if (t === 2) {
+          d.textContent = '';
+        } else {
+          d.textContent = '';
+        }
+        mapEl.appendChild(d);
+      }
+    }
+    // player overlay on cell
+    const idx = S.player.y * MAP_W + S.player.x;
+    const cell = mapEl.children[idx];
+    if (cell) {
+      const p = document.createElement('div');
+      p.className = 'player';
+      p.textContent = S.player.em;
+      cell.appendChild(p);
+    }
+    if (S.bossOpen) {
+      $('hint-bar').textContent = '大門開咗！行去 🚪 撳 A';
+    } else {
+      $('hint-bar').textContent = '行去黃色地點，撳 A 答題';
+    }
+  }
+
+  function updateHUD() {
+    $('score-pill').textContent = '⭐ ' + S.correct + '/' + S.answered;
+    const n = SPOTS.filter(function (s) { return S.cleared[s.id]; }).length;
+    $('spot-pill').textContent = '🚩 ' + n + '/' + SPOTS.length;
+  }
+
+  function move(dx, dy) {
+    if (S.screen !== 'map' || S.quiz) return;
+    const nx = S.player.x + dx;
+    const ny = S.player.y + dy;
+    if (!canWalk(nx, ny)) {
+      toast('唔可以行呢邊');
+      return;
+    }
+    S.player.x = nx;
+    S.player.y = ny;
+    renderMap();
+    const sp = spotAt(nx, ny);
+    if (sp) {
+      if (sp.id === 'boss') {
+        $('hint-bar').textContent = S.bossOpen ? '撳 A 挑戰' : '先完成其他地點';
+      } else if (S.cleared[sp.id]) {
+        $('hint-bar').textContent = sp.title + ' ✅ 已完成';
+      } else {
+        $('hint-bar').textContent = sp.title + ' · 撳 A';
+      }
+    }
+  }
+
+  function tryInteract() {
+    if (S.screen !== 'map' || S.quiz) return;
+    const sp = spotAt(S.player.x, S.player.y);
+    if (!sp) {
+      toast('行近黃色地點');
+      return;
+    }
+    if (sp.id === 'boss') {
+      if (!S.bossOpen) {
+        toast('先完成 4 個地點');
+        return;
+      }
+      openBoss();
+      return;
+    }
+    if (S.cleared[sp.id]) {
+      toast('呢度完成咗 ✅');
+      return;
+    }
+    openSpotQuiz(sp);
+  }
+
+  function pressB() {
+    if (S.quiz) {
+      // hint: highlight correct after wrong path, or close if not answered
+      if (S.quiz.picked != null) {
+        closeQuiz();
+      } else {
+        toast('揀 A B C 大圓');
+        speak(S.quiz.q.tts || '');
+      }
+      return;
+    }
+    if (S.screen === 'map') toast('用方向鍵行，A 確認');
+  }
+
+  // ——— Quiz ———
+  function openSpotQuiz(sp) {
+    const q = {
+      visual: sp.visual,
+      prompt: sp.prompt,
+      tts: sp.tts,
+      options: sp.options,
+    };
+    S.quiz = {
+      mode: 'spot',
+      spotId: sp.id,
+      title: sp.title,
+      qi: 0,
+      q: q,
+      rendered: null,
+      picked: null,
+      wasCorrect: null,
+      scored: false,
+    };
+    S.selChoice = 0;
+    renderQuiz();
+    $('quiz-modal').classList.add('on');
+  }
+
+  function openBoss() {
+    S.bossQi = 0;
+    showBossQ();
+  }
+
+  function showBossQ() {
+    const q = BOSS.questions[S.bossQi];
+    S.quiz = {
+      mode: 'boss',
+      spotId: 'boss',
+      title: '挑戰 ' + (S.bossQi + 1) + '/' + BOSS.questions.length,
+      qi: S.bossQi,
+      q: q,
+      rendered: null,
+      picked: null,
+      wasCorrect: null,
+      scored: false,
+    };
+    S.selChoice = 0;
+    renderQuiz();
+    $('quiz-modal').classList.add('on');
+  }
+
+  function renderQuiz() {
+    const z = S.quiz;
+    const q = z.q;
+    $('quiz-title').textContent = z.title;
+    $('q-visual').textContent = q.visual || '❓';
+    $('q-prompt').innerHTML = q.prompt;
+    const opts = pickOptions(q.options, S.nOpts);
+    // letter by render order
+    z.rendered = opts.map(function (o, i) {
+      return Object.assign({}, o, { letter: String.fromCharCode(65 + i) });
+    });
+    const box = $('q-choices');
+    box.innerHTML = '';
+    z.rendered.forEach(function (o, i) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'choice' + (i === S.selChoice ? ' sel' : '');
+      b.innerHTML = '<span class="letter">' + o.letter + '</span><span class="v">' + o.visual + '</span><span class="lab">' + o.letter + '. ' + o.label + '</span>';
+      b.addEventListener('click', function () { answer(i); });
+      box.appendChild(b);
+    });
+    $('q-fb').className = 'fb';
+    $('q-fb').textContent = '';
+    $('q-actions').hidden = true;
+  }
+
+  function answer(i) {
+    const z = S.quiz;
+    if (!z || z.picked != null) return;
+    const o = z.rendered[i];
+    if (!o) return;
+    z.picked = i;
+    z.wasCorrect = !!o.ok;
+    // score once
+    if (!z.scored) {
+      S.answered += 1;
+      if (o.ok) S.correct += 1;
+      z.scored = true;
+      z.scoreSnapshot = { answered: S.answered, correct: S.correct, ok: o.ok };
+    }
+    beep(o.ok);
+    const choices = $('q-choices').children;
+    Array.prototype.forEach.call(choices, function (c, idx) {
+      c.classList.add('disabled');
+      if (idx === i) c.classList.add(o.ok ? 'correct' : 'wrong');
+      if (z.rendered[idx].ok) c.classList.add('correct');
+    });
+    const fb = $('q-fb');
+    fb.className = 'fb on ' + (o.ok ? 'ok' : 'bad');
+    if (o.ok) {
+      fb.textContent = '✅ 啱！' + o.letter + ' · ' + o.label;
+    } else {
+      const right = z.rendered.find(function (x) { return x.ok; });
+      fb.textContent = '再試！正確係 ' + (right ? right.letter + ' · ' + right.label : '');
+    }
+    $('q-actions').hidden = false;
+    updateHUD();
+  }
+
+  function retryQuiz() {
+    const z = S.quiz;
+    if (!z) return;
+    // rollback score for this attempt
+    if (z.scored && z.scoreSnapshot) {
+      S.answered = Math.max(0, S.answered - 1);
+      if (z.scoreSnapshot.ok) S.correct = Math.max(0, S.correct - 1);
+      z.scored = false;
+      z.scoreSnapshot = null;
+    }
+    z.picked = null;
+    z.wasCorrect = null;
+    updateHUD();
+    renderQuiz();
+  }
+
+  function nextAfterQuiz() {
+    const z = S.quiz;
+    if (!z) return;
+    if (z.mode === 'spot') {
+      if (z.wasCorrect) {
+        S.cleared[z.spotId] = true;
+        closeQuiz();
+        renderMap();
+        updateHUD();
+        toast('完成！');
+        if (allSpotsCleared()) {
+          setTimeout(function () { toast('大門開咗！行去 🚪'); }, 500);
+        }
+      } else {
+        // must get right to clear — allow continue only stays; force retry feel
+        retryQuiz();
+        toast('答啱先可以完成');
+      }
+      return;
+    }
+    // boss
+    if (!z.wasCorrect) {
+      retryQuiz();
+      toast('答啱先繼續');
+      return;
+    }
+    S.bossQi += 1;
+    if (S.bossQi >= BOSS.questions.length) {
+      closeQuiz();
+      showCert();
+    } else {
+      showBossQ();
+    }
+  }
+
+  function closeQuiz() {
+    S.quiz = null;
+    $('quiz-modal').classList.remove('on');
+  }
+
+  function showCert() {
+    const rate = S.answered ? S.correct / S.answered : 0;
+    let medal = '🥉', title = '銅牌', cls = 'bronze';
+    if (rate >= 0.9) { medal = '🥇'; title = '金牌'; cls = 'gold'; }
+    else if (rate >= 0.7) { medal = '🥈'; title = '銀牌'; cls = 'silver'; }
+    else if (rate >= 0.5) { medal = '🥉'; title = '銅牌'; }
+    else { medal = '⭐'; title = '完成'; }
+    $('cert-medal').textContent = medal;
+    $('cert-title').textContent = title;
+    $('cert-who').textContent = S.player.em + ' ' + S.player.name + ' · 小小國情島';
+    $('cert-score').textContent = S.correct + ' / ' + S.answered + '（' + Math.round(rate * 100) + '%）';
+    showScreen('cert');
+    speak(title + '。' + S.player.name + '完成小小國情島');
+  }
+
+  function resetProgress() {
+    S.cleared = {};
+    S.answered = 0;
+    S.correct = 0;
+    S.bossQi = 0;
+    S.bossOpen = false;
+    S.player.x = 1;
+    S.player.y = 1;
+    S.quiz = null;
+    $('quiz-modal').classList.remove('on');
+    updateHUD();
+  }
+
+  function startGame() {
+    resetProgress();
+    showScreen('map');
+    renderMap();
+  }
+
+  // ——— Input ———
+  function handleAct(act) {
+    if (act === 'up') {
+      if (S.quiz) { moveChoice(-2); return; }
+      move(0, -1); return;
+    }
+    if (act === 'down') {
+      if (S.quiz) { moveChoice(2); return; }
+      move(0, 1); return;
+    }
+    if (act === 'left') {
+      if (S.quiz) { moveChoice(-1); return; }
+      move(-1, 0); return;
+    }
+    if (act === 'right') {
+      if (S.quiz) { moveChoice(1); return; }
+      move(1, 0); return;
+    }
+    if (act === 'a') {
+      if (S.quiz) {
+        if (S.quiz.picked != null) nextAfterQuiz();
+        else answer(S.selChoice);
+        return;
+      }
+      if (S.screen === 'home') { showScreen('id'); return; }
+      if (S.screen === 'id') {
+        if (!$('btn-id-go').disabled) startGame();
+        return;
+      }
+      if (S.screen === 'map') tryInteract();
+      if (S.screen === 'cert') startGame();
+      return;
+    }
+    if (act === 'b') {
+      if (S.quiz) { pressB(); return; }
+      if (S.screen === 'cert') showScreen('home');
+      else if (S.screen === 'map') pressB();
+      else if (S.screen === 'id') showScreen('home');
+      return;
+    }
+  }
+
+  function moveChoice(delta) {
+    if (!S.quiz || S.quiz.picked != null || !S.quiz.rendered) return;
+    const n = S.quiz.rendered.length;
+    S.selChoice = (S.selChoice + delta + n * 5) % n;
+    Array.prototype.forEach.call($('q-choices').children, function (c, i) {
+      c.classList.toggle('sel', i === S.selChoice);
+    });
+  }
+
+  function bindVk() {
+    Array.prototype.forEach.call(document.querySelectorAll('.k[data-act]'), function (btn) {
+      const act = btn.getAttribute('data-act');
+      const fire = function (e) {
+        e.preventDefault();
+        btn.classList.add('pressed');
+        handleAct(act);
+        setTimeout(function () { btn.classList.remove('pressed'); }, 100);
+      };
+      btn.addEventListener('pointerdown', fire);
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    const k = e.key;
+    if (k === 'ArrowUp') { e.preventDefault(); handleAct('up'); }
+    else if (k === 'ArrowDown') { e.preventDefault(); handleAct('down'); }
+    else if (k === 'ArrowLeft') { e.preventDefault(); handleAct('left'); }
+    else if (k === 'ArrowRight') { e.preventDefault(); handleAct('right'); }
+    else if (k === 'a' || k === 'A' || k === 'Enter' || k === ' ') { e.preventDefault(); handleAct('a'); }
+    else if (k === 'b' || k === 'B' || k === 'Escape' || k === 'Backspace') { e.preventDefault(); handleAct('b'); }
+    else if (k === '1' || k === '2' || k === '3' || k === '4') {
+      if (S.quiz && S.quiz.picked == null) {
+        e.preventDefault();
+        answer(parseInt(k, 10) - 1);
+      }
+    }
+  });
+
+  // ——— UI binds ———
+  $('btn-start').addEventListener('click', function () { showScreen('id'); });
+  $('btn-id-skip').addEventListener('click', function () {
+    S.player = { name: '同學', em: '🙂', x: 1, y: 1 };
+    startGame();
+  });
+  $('btn-id-go').addEventListener('click', startGame);
+  $('btn-home').addEventListener('click', function () {
+    if (confirm('返主頁？進度會保留喺呢次開啟。')) showScreen('home');
+  });
+  $('btn-cert-home').addEventListener('click', function () { showScreen('home'); });
+  $('btn-cert-replay').addEventListener('click', startGame);
+  $('btn-retry').addEventListener('click', retryQuiz);
+  $('btn-next').addEventListener('click', nextAfterQuiz);
+  $('btn-quiz-close').addEventListener('click', function () {
+    if (S.quiz && S.quiz.mode === 'boss') {
+      toast('完成挑戰先可以走');
+      return;
+    }
+    closeQuiz();
+  });
+  $('btn-tts-id').addEventListener('click', function () { speak('揀一個身份'); });
+  $('btn-tts-map').addEventListener('click', function () {
+    speak($('hint-bar').textContent || '行去黃色地點');
+  });
+  $('btn-tts-q').addEventListener('click', function () {
+    if (S.quiz) speak(S.quiz.q.tts || $('q-prompt').textContent);
+  });
+
+  // teacher long-press brand
+  function bindLongPress(el) {
+    if (!el) return;
+    const start = function () {
+      longPressTimer = setTimeout(function () { $('teacher').classList.add('on'); }, 650);
+    };
+    const end = function () { clearTimeout(longPressTimer); };
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointerleave', end);
+    el.addEventListener('pointercancel', end);
+  }
+  bindLongPress(document.querySelector('#sc-home .brand') || document.querySelector('#sc-home h1'));
+  bindLongPress($('map-title'));
+  // also double-click title
+  $('map-title').addEventListener('dblclick', function () { $('teacher').classList.add('on'); });
+
+  $('btn-t-close').addEventListener('click', function () {
+    S.nOpts = parseInt($('set-diff').value, 10) || 3;
+    S.showVk = $('set-vk').value !== '0';
+    $('vk').classList.toggle('hidden', !S.showVk);
+    $('teacher').classList.remove('on');
+  });
+  $('btn-t-boss').addEventListener('click', function () {
+    SPOTS.forEach(function (s) { S.cleared[s.id] = true; });
+    S.bossOpen = true;
+    $('teacher').classList.remove('on');
+    if (S.screen === 'map') { renderMap(); updateHUD(); toast('已開 Boss'); }
+  });
+  $('btn-t-reset').addEventListener('click', function () {
+    resetProgress();
+    if (S.screen === 'map') renderMap();
+    toast('已重設');
+  });
+
+  window.addEventListener('resize', function () {
+    if (S.screen === 'map') renderMap();
+  });
+
+  // boot
+  buildIdGrid();
+  bindVk();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = function () { window.speechSynthesis.getVoices(); };
+  }
+
+  // expose for smoke
+  window.NI = {
+    S: S,
+    startGame: startGame,
+    move: move,
+    tryInteract: tryInteract,
+    allSpotsCleared: allSpotsCleared,
+    SPOTS: SPOTS,
+  };
+})();
+</script>
+</body>
+</html>
