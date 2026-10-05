@@ -140,11 +140,11 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 .q-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .q-actions .btn{flex:1;min-width:110px}
 
-/* cert */
-.cert-medal{font-size:clamp(4rem,18vw,6rem);text-align:center;line-height:1;margin:8px 0}
-.cert-title{text-align:center;font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;margin:0}
-.cert-sub{text-align:center;color:var(--muted);font-weight:700;margin:8px 0 16px}
-.score-line{text-align:center;font-weight:900;font-size:1.25rem;margin-bottom:16px}
+/* cert base — celebrate styles further below */
+.cert-medal{font-size:clamp(4.5rem,20vw,7rem);text-align:center;line-height:1;margin:4px 0}
+.cert-title{text-align:center;font-size:clamp(1.8rem,5.5vw,2.4rem);font-weight:900;margin:0}
+.cert-sub{text-align:center;color:var(--muted);font-weight:700;margin:8px 0 8px}
+.score-line{text-align:center;font-weight:900;font-size:1.3rem;margin-bottom:8px}
 
 /* teacher */
 .teacher{
@@ -158,11 +158,84 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 
 .toast{
   position:fixed;left:50%;bottom:18%;transform:translateX(-50%);
-  background:rgba(15,23,42,.92);color:#fff;padding:10px 16px;border-radius:12px;
-  font-weight:800;z-index:80;display:none;max-width:90%;text-align:center;
+  background:rgba(15,23,42,.92);color:#fff;padding:12px 18px;border-radius:14px;
+  font-weight:900;font-size:clamp(1.05rem,3vw,1.35rem);z-index:80;display:none;max-width:92%;text-align:center;
+  border:3px solid rgba(255,255,255,.25);box-shadow:0 10px 28px rgba(0,0,0,.35);
 }
-.toast.on{display:block;animation:fade 1.6s ease forwards}
-@keyframes fade{0%{opacity:0;transform:translateX(-50%) translateY(8px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+.toast.on{display:block;animation:fade 1.8s ease forwards}
+.toast.ok{background:linear-gradient(135deg,#166534,#22c55e);border-color:#bbf7d0}
+.toast.big{font-size:clamp(1.25rem,4vw,1.7rem);padding:16px 22px;bottom:22%}
+@keyframes fade{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.96)}12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}78%{opacity:1}100%{opacity:0}}
+
+/* success overlay */
+#fx-layer{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.fx-burst{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  font-size:clamp(3rem,16vw,5.5rem);font-weight:900;text-align:center;line-height:1.15;
+  text-shadow:0 4px 0 rgba(0,0,0,.2),0 0 30px rgba(250,204,21,.8);
+  animation:burstPop .9s cubic-bezier(.34,1.56,.64,1) forwards;white-space:pre-line;
+}
+@keyframes burstPop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-8deg)}
+  35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(2deg)}
+  70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  100%{opacity:0;transform:translate(-50%,-60%) scale(.9)}
+}
+.fx-star{
+  position:absolute;font-size:1.6rem;animation:starFly 1s ease-out forwards;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+@keyframes starFly{
+  0%{opacity:1;transform:translate(0,0) scale(.5)}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(var(--rot))}
+}
+.fx-ring{
+  position:absolute;left:50%;top:42%;width:20px;height:20px;border-radius:50%;
+  border:4px solid #fde047;transform:translate(-50%,-50%);
+  animation:ringOut .7s ease-out forwards;
+}
+@keyframes ringOut{0%{opacity:1;width:20px;height:20px}100%{opacity:0;width:220px;height:220px}}
+
+.choice.correct{animation:correctPulse .45s ease}
+@keyframes correctPulse{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+.fb.ok{font-size:clamp(1.15rem,3.2vw,1.45rem);animation:fbIn .35s ease}
+@keyframes fbIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.modal.card-win .card{box-shadow:0 0 0 6px rgba(34,197,94,.35),0 16px 40px rgba(0,0,0,.35)}
+
+/* map spot clear */
+.cell.spot.just-clear{animation:spotClear .8s ease}
+@keyframes spotClear{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.6)}40%{transform:scale(1.12);box-shadow:0 0 0 12px rgba(34,197,94,0)}100%{transform:scale(1)}}
+.cell.boss.just-open{animation:bossOpen 1s ease}
+@keyframes bossOpen{0%,100%{transform:scale(1)}30%{transform:scale(1.18)}50%{transform:scale(.95)}}
+
+/* cert celebrate */
+#sc-cert .card.win{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#fffbeb 0%,#fff 40%,#ecfdf5 100%);
+  border-color:#fbbf24;box-shadow:0 0 0 6px rgba(251,191,36,.35),0 16px 40px rgba(0,0,0,.3);
+}
+.cert-medal{font-size:clamp(4.5rem,20vw,7rem);text-align:center;line-height:1;margin:4px 0;animation:medalDrop .7s cubic-bezier(.34,1.4,.64,1)}
+@keyframes medalDrop{0%{transform:translateY(-40px) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.cert-title{text-align:center;font-size:clamp(1.8rem,5.5vw,2.4rem);font-weight:900;margin:0;color:#b45309}
+.cert-sub{text-align:center;color:var(--muted);font-weight:700;margin:8px 0 8px}
+.cert-praise{
+  text-align:center;font-weight:900;font-size:clamp(1.15rem,3.5vw,1.45rem);
+  color:#166534;background:#dcfce7;border:3px solid #86efac;border-radius:14px;
+  padding:10px 12px;margin:0 0 12px;animation:fbIn .5s ease .2s both;
+}
+.score-line{text-align:center;font-weight:900;font-size:1.3rem;margin-bottom:8px}
+.cert-stars{text-align:center;font-size:1.8rem;letter-spacing:.15em;margin-bottom:14px;animation:fbIn .5s ease .35s both}
+.cert-stamp{
+  display:inline-block;margin:0 auto 12px;padding:6px 14px;border:4px solid #dc2626;color:#dc2626;
+  border-radius:8px;font-weight:900;font-size:1.1rem;transform:rotate(-8deg);
+  animation:stampIn .5s cubic-bezier(.34,1.5,.64,1) .15s both;
+}
+@keyframes stampIn{0%{opacity:0;transform:rotate(-25deg) scale(1.6)}100%{opacity:1;transform:rotate(-8deg) scale(1)}}
+
+@media (prefers-reduced-motion: reduce){
+  .fx-burst,.fx-star,.fx-ring,.cert-medal,.choice.correct,.cell.spot.just-clear,.cell.boss.just-open,
+  .toast.on,.fb.ok,.cert-praise,.cert-stars,.cert-stamp{animation:none!important;opacity:1;transform:none}
+}
 </style>
 </head>
 <body>
@@ -222,18 +295,23 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
 
   <!-- CERT -->
   <section id="sc-cert" class="screen">
-    <div class="card" style="margin:auto;width:100%;max-width:480px;text-align:center">
+    <div class="card win" id="cert-card" style="margin:auto;width:100%;max-width:480px;text-align:center">
+      <div class="cert-stamp" id="cert-stamp">完成</div>
       <div class="cert-medal" id="cert-medal">🥇</div>
       <h2 class="cert-title" id="cert-title">金牌</h2>
       <p class="cert-sub" id="cert-who">同學 · 小小國情島</p>
+      <div class="cert-praise" id="cert-praise">你做得好好！</div>
       <div class="score-line" id="cert-score">10 / 10</div>
+      <div class="cert-stars" id="cert-stars" aria-hidden="true">⭐⭐⭐</div>
       <div class="btn-row">
         <button type="button" class="btn btn-ghost" id="btn-cert-home">主頁</button>
-        <button type="button" class="btn btn-primary" id="btn-cert-replay">再玩</button>
+        <button type="button" class="btn btn-primary" id="btn-cert-replay">再玩一次 ▶</button>
       </div>
     </div>
   </section>
 </div>
+
+<div id="fx-layer" aria-hidden="true"></div>
 
 <!-- QUIZ -->
 <div class="modal" id="quiz-modal" role="dialog" aria-modal="true">
@@ -419,12 +497,16 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   let cellPx = 44;
   let longPressTimer = null;
 
-  function toast(msg) {
+  function toast(msg, kind) {
     const t = $('toast');
     t.textContent = msg;
-    t.classList.remove('on');
+    t.className = 'toast' + (kind ? ' ' + kind : '');
     void t.offsetWidth;
     t.classList.add('on');
+  }
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   function speak(text) {
@@ -443,14 +525,102 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
   function beep(ok) {
     try {
       const ctx = beep._ctx || (beep._ctx = new (window.AudioContext || window.webkitAudioContext)());
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = ok ? 880 : 220;
-      g.gain.value = 0.06;
-      o.start();
-      setTimeout(function () { o.stop(); }, ok ? 120 : 180);
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+      if (ok) {
+        // 上升三音 + 高亮
+        [[0, 523], [0.09, 659], [0.18, 784], [0.28, 1046]].forEach(function (pair) {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = 'sine';
+          o.frequency.value = pair[1];
+          g.gain.setValueAtTime(0.0001, now + pair[0]);
+          g.gain.exponentialRampToValueAtTime(0.08, now + pair[0] + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + pair[0] + 0.16);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(now + pair[0]);
+          o.stop(now + pair[0] + 0.18);
+        });
+      } else {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = 180;
+        g.gain.value = 0.05;
+        o.connect(g); g.connect(ctx.destination);
+        o.start(now);
+        o.stop(now + 0.2);
+      }
     } catch (e) { /* ignore */ }
+  }
+
+  function fanfare() {
+    try {
+      const ctx = beep._ctx || (beep._ctx = new (window.AudioContext || window.webkitAudioContext)());
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+      const notes = [523, 659, 784, 1046, 784, 1046, 1318];
+      notes.forEach(function (f, i) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = f;
+        const t0 = now + i * 0.11;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.09, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + 0.24);
+      });
+    } catch (e) { /* ignore */ }
+  }
+
+  function clearFx() {
+    const layer = $('fx-layer');
+    if (layer) layer.innerHTML = '';
+  }
+
+  function celebrate(kind, label) {
+    // kind: ok | spot | boss | win
+    clearFx();
+    const layer = $('fx-layer');
+    if (!layer) return;
+    const reduce = reducedMotion();
+    const texts = {
+      ok: '✨ 好叻！',
+      spot: '🎉 完成！',
+      boss: '🚪 下一題！',
+      win: '🏆 全部完成！',
+    };
+    const burst = document.createElement('div');
+    burst.className = 'fx-burst';
+    burst.textContent = label || texts[kind] || '✨ 好叻！';
+    layer.appendChild(burst);
+
+    if (!reduce) {
+      const ring = document.createElement('div');
+      ring.className = 'fx-ring';
+      layer.appendChild(ring);
+      const emojis = kind === 'win'
+        ? ['⭐', '🌟', '🎊', '🏆', '✨', '🥇', '🎈', '💖']
+        : ['⭐', '✨', '🌟', '💛', '👏', '🌈'];
+      for (let i = 0; i < (kind === 'win' ? 14 : 8); i++) {
+        const s = document.createElement('span');
+        s.className = 'fx-star';
+        s.textContent = emojis[i % emojis.length];
+        const ang = (Math.PI * 2 * i) / (kind === 'win' ? 14 : 8) + Math.random() * 0.3;
+        const dist = 80 + Math.random() * 120;
+        s.style.left = '50%';
+        s.style.top = '42%';
+        s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+        s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+        s.style.setProperty('--rot', (Math.random() * 120 - 60) + 'deg');
+        s.style.animationDelay = (Math.random() * 0.12) + 's';
+        layer.appendChild(s);
+      }
+    }
+    setTimeout(clearFx, kind === 'win' ? 1600 : 1000);
   }
 
   function showScreen(name) {
@@ -748,6 +918,7 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     $('q-fb').className = 'fb';
     $('q-fb').textContent = '';
     $('q-actions').hidden = true;
+    $('quiz-modal').classList.remove('card-win');
   }
 
   function answer(i) {
@@ -765,6 +936,9 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
       z.scoreSnapshot = { answered: S.answered, correct: S.correct, ok: o.ok };
     }
     beep(o.ok);
+    const modal = $('quiz-modal');
+    if (o.ok) modal.classList.add('card-win');
+    else modal.classList.remove('card-win');
     const choices = $('q-choices').children;
     Array.prototype.forEach.call(choices, function (c, idx) {
       c.classList.add('disabled');
@@ -774,10 +948,15 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     const fb = $('q-fb');
     fb.className = 'fb on ' + (o.ok ? 'ok' : 'bad');
     if (o.ok) {
-      fb.textContent = '✅ 啱！' + o.letter + ' · ' + o.label;
+      const lines = ['✨ 好叻！', '👏 答啱喇！', '🌟 太棒！', '💪 繼續加油！'];
+      const line = lines[Math.floor(Math.random() * lines.length)];
+      fb.textContent = line + '　' + o.letter + ' · ' + o.label;
+      celebrate('ok', line);
+      // 答對短暫朗讀鼓勵（手動環境：短句 OK）
+      speak(line.replace(/[✨👏🌟💪]/g, ''));
     } else {
       const right = z.rendered.find(function (x) { return x.ok; });
-      fb.textContent = '再試！正確係 ' + (right ? right.letter + ' · ' + right.label : '');
+      fb.textContent = '再試一次！正確係 ' + (right ? right.letter + ' · ' + right.label : '');
     }
     $('q-actions').hidden = false;
     updateHUD();
@@ -804,16 +983,36 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
     if (!z) return;
     if (z.mode === 'spot') {
       if (z.wasCorrect) {
-        S.cleared[z.spotId] = true;
+        const sid = z.spotId;
+        S.cleared[sid] = true;
         closeQuiz();
         renderMap();
         updateHUD();
-        toast('完成！');
+        // 地圖 spot 閃綠
+        const cell = mapEl.querySelector('.cell.spot.cleared[data-x]');
+        Array.prototype.forEach.call(mapEl.querySelectorAll('.cell.spot.cleared'), function (c) {
+          if (+c.dataset.x === (SPOTS.find(function (s) { return s.id === sid; }) || {}).x &&
+              +c.dataset.y === (SPOTS.find(function (s) { return s.id === sid; }) || {}).y) {
+            c.classList.add('just-clear');
+            setTimeout(function () { c.classList.remove('just-clear'); }, 900);
+          }
+        });
+        celebrate('spot', '🎉 呢度完成！');
+        toast('🎉 完成一個地點！', 'ok big');
+        beep(true);
         if (allSpotsCleared()) {
-          setTimeout(function () { toast('大門開咗！行去 🚪'); }, 500);
+          setTimeout(function () {
+            celebrate('spot', '🚪 大門開咗！');
+            toast('🚪 大門開咗！行去挑戰', 'ok big');
+            const bossCell = mapEl.querySelector('.cell.boss');
+            if (bossCell) {
+              bossCell.classList.add('just-open');
+              setTimeout(function () { bossCell.classList.remove('just-open'); }, 1100);
+            }
+            speak('大門開咗，行去挑戰');
+          }, 700);
         }
       } else {
-        // must get right to clear — allow continue only stays; force retry feel
         retryQuiz();
         toast('答啱先可以完成');
       }
@@ -830,28 +1029,52 @@ h1{margin:0 0 8px;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:900;color:var(-
       closeQuiz();
       showCert();
     } else {
+      celebrate('boss', '👍 ' + S.bossQi + '/' + BOSS.questions.length);
+      toast('👍 下一題！', 'ok');
       showBossQ();
     }
   }
 
   function closeQuiz() {
     S.quiz = null;
-    $('quiz-modal').classList.remove('on');
+    const m = $('quiz-modal');
+    m.classList.remove('on');
+    m.classList.remove('card-win');
   }
 
   function showCert() {
     const rate = S.answered ? S.correct / S.answered : 0;
-    let medal = '🥉', title = '銅牌', cls = 'bronze';
-    if (rate >= 0.9) { medal = '🥇'; title = '金牌'; cls = 'gold'; }
-    else if (rate >= 0.7) { medal = '🥈'; title = '銀牌'; cls = 'silver'; }
-    else if (rate >= 0.5) { medal = '🥉'; title = '銅牌'; }
-    else { medal = '⭐'; title = '完成'; }
+    let medal = '🥉', title = '銅牌', stamp = '完成', stars = '⭐', praise = '你完成咗！好努力！';
+    if (rate >= 0.9) {
+      medal = '🥇'; title = '金牌'; stamp = '超棒'; stars = '⭐⭐⭐';
+      praise = '太叻喇！全部都好掂！';
+    } else if (rate >= 0.7) {
+      medal = '🥈'; title = '銀牌'; stamp = '好叻'; stars = '⭐⭐';
+      praise = '好叻！幾乎全啱！';
+    } else if (rate >= 0.5) {
+      medal = '🥉'; title = '銅牌'; stamp = '完成'; stars = '⭐';
+      praise = '完成島嶼探索！繼續加油！';
+    } else {
+      medal = '⭐'; title = '完成'; stamp = '完成'; stars = '✨';
+      praise = '你行完成個島！好勇敢！';
+    }
     $('cert-medal').textContent = medal;
     $('cert-title').textContent = title;
+    $('cert-stamp').textContent = stamp;
     $('cert-who').textContent = S.player.em + ' ' + S.player.name + ' · 小小國情島';
-    $('cert-score').textContent = S.correct + ' / ' + S.answered + '（' + Math.round(rate * 100) + '%）';
+    $('cert-praise').textContent = praise;
+    $('cert-score').textContent = '答啱 ' + S.correct + ' / ' + S.answered + '（' + Math.round(rate * 100) + '%）';
+    $('cert-stars').textContent = stars;
+    // restart medal animation
+    const med = $('cert-medal');
+    med.style.animation = 'none';
+    void med.offsetWidth;
+    med.style.animation = '';
     showScreen('cert');
-    speak(title + '。' + S.player.name + '完成小小國情島');
+    fanfare();
+    celebrate('win', medal + ' ' + title);
+    toast(medal + ' ' + title + '！', 'ok big');
+    speak(title + '。' + praise + '。' + S.player.name + '完成小小國情島');
   }
 
   function resetProgress() {
