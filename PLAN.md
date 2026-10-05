@@ -3,7 +3,7 @@
 > **For Hermes:** plan-first；Ken 回「順序」先實作。未寫可玩 `index.html` 唔算 DONE。  
 > **構思：** A 拍板（Top-down Zelda/Pokémon 式）  
 > **路徑：** `~/workspace/vs code/education/value_education/national-island/`  
-> **狀態：** 資料夾 ✅ · 本計劃 FIRM ✅ · `index.html` ⏳ 0%
+> **狀態：** 可玩 MVP live ✅ · `ARCHITECTURE.md` ✅ · skill 已記  
 
 **Goal:** 將軍澳培智中度班用 **單檔 HTML** 國民教育小遊戲：retro top-down 小島探索 + 圖選答題；PC 方向鍵/A/B + iPad 自製大 VK 同一套。
 

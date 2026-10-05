@@ -24,6 +24,8 @@ python3 -c "import re,pathlib; h=pathlib.Path('index.html').read_text(); s=max(r
 node --check /tmp/ni.js
 ```
 
-## 計劃
+## 計劃 / 架構
 
-見 `PLAN.md`
+- `PLAN.md` — 構思 FIRM
+- `ARCHITECTURE.md` — **架構真相**（state / map / input / feedback）
+- Skill: `national-island-sen-game` + `education-game-dev` ref
